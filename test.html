@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tests Block Blast Solver</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #252526;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: #4ec9b0;
+            text-align: center;
+            border-bottom: 2px solid #4ec9b0;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #1e1e1e;
+            border-left: 4px solid #569cd6;
+            border-radius: 5px;
+        }
+        .test-title {
+            color: #569cd6;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .success {
+            color: #4ec9b0;
+        }
+        .error {
+            color: #f48771;
+        }
+        .warning {
+            color: #dcdcaa;
+        }
+        .result-line {
+            margin: 5px 0;
+            padding-left: 20px;
+        }
+        #summary {
+            margin-top: 30px;
+            padding: 20px;
+            background: #264f78;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        .loader {
+            text-align: center;
+            padding: 20px;
+            color: #dcdcaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Tests Block Blast Solver</h1>
+        <div id="loader" class="loader">Chargement des tests...</div>
+        <div id="test-results"></div>
+        <div id="summary"></div>
+    </div>
+
+    <script src="blockShapes.js"></script>
+    <script src="solver.js"></script>
+    <script>
+        // Système de test
+        class TestRunner {
+            constructor() {
+                this.results = [];
+                this.passedTests = 0;
+                this.failedTests = 0;
+            }
+
+            log(message, type = 'info') {
+                this.results.push({ message, type });
+            }
+
+            assert(condition, message) {
+                if (condition) {
+                    this.passedTests++;
+                    this.log(`✓ ${message}`, 'success');
+                    return true;
+                } else {
+                    this.failedTests++;
+                    this.log(`✗ ${message}`, 'error');
+                    return false;
+                }
+            }
+
+            section(title) {
+                this.log(`\n${title}`, 'section');
+            }
+
+            render() {
+                const loader = document.getElementById('loader');
+                loader.style.display = 'none';
+
+                const resultsDiv = document.getElementById('test-results');
+                let currentSection = null;
+
+                this.results.forEach(result => {
+                    if (result.type === 'section') {
+                        if (currentSection) {
+                            resultsDiv.appendChild(currentSection);
+                        }
+                        currentSection = document.createElement('div');
+                        currentSection.className = 'test-section';
+
+                        const title = document.createElement('div');
+                        title.className = 'test-title';
+                        title.textContent = result.message;
+                        currentSection.appendChild(title);
+                    } else {
+                        const line = document.createElement('div');
+                        line.className = `result-line ${result.type}`;
+                        line.textContent = result.message;
+                        if (currentSection) {
+                            currentSection.appendChild(line);
+                        }
+                    }
+                });
+
+                if (currentSection) {
+                    resultsDiv.appendChild(currentSection);
+                }
+
+                // Résumé
+                const summaryDiv = document.getElementById('summary');
+                const total = this.passedTests + this.failedTests;
+                const percentage = ((this.passedTests / total) * 100).toFixed(1);
+
+                summaryDiv.innerHTML = `
+                    <strong>Résumé des tests:</strong><br>
+                    ${this.passedTests} / ${total} tests réussis (${percentage}%)<br>
+                    ${this.failedTests > 0 ? `<span class="error">${this.failedTests} tests échoués</span>` : '<span class="success">✓ Tous les tests sont passés!</span>'}
+                `;
+            }
+        }
+
+        // Exécution des tests
+        const runner = new TestRunner();
+
+        // Test 1: Vérification des formes de blocs
+        runner.section('Test 1: Vérification des formes de blocs');
+        const blockCount = Object.keys(BLOCK_SHAPES).length;
+        runner.assert(blockCount > 0, `${blockCount} formes de blocs définies`);
+
+        let allValid = true;
+        for (const [id, block] of Object.entries(BLOCK_SHAPES)) {
+            if (!block.name || !block.shape || !block.color) {
+                runner.assert(false, `Bloc ${id} invalide`);
+                allValid = false;
+            }
+        }
+        runner.assert(allValid, 'Tous les blocs ont des propriétés valides');
+
+        // Test 2: Test des fonctions utilitaires
+        runner.section('Test 2: Fonctions utilitaires');
+        const testBlock = BLOCK_SHAPES.square2x2;
+        const dims = getShapeDimensions(testBlock.shape);
+        runner.assert(dims.width === 2 && dims.height === 2, `getShapeDimensions: ${dims.width}x${dims.height} pour square2x2`);
+
+        const emptyGrid = Array(8).fill(null).map(() => Array(8).fill(0));
+        const canPlace = canPlaceBlock(emptyGrid, testBlock, 0, 0);
+        runner.assert(canPlace === true, `canPlaceBlock retourne true pour position (0,0) sur grille vide`);
+
+        const gridWithBlock = placeBlock(emptyGrid, testBlock, 0, 0);
+        const isPlaced = gridWithBlock[0][0] === 1 && gridWithBlock[1][1] === 1;
+        runner.assert(isPlaced, 'placeBlock place correctement le bloc');
+
+        // Test 3: Test de détection de lignes complètes
+        runner.section('Test 3: Détection de lignes complètes');
+        const gridWithCompleteLine = Array(8).fill(null).map(() => Array(8).fill(0));
+        gridWithCompleteLine[0] = Array(8).fill(1);
+
+        const scoreResult = calculateScore(gridWithCompleteLine);
+        runner.assert(scoreResult.clearedLines === 1, `Ligne horizontale complète détectée: ${scoreResult.clearedLines} ligne(s)`);
+        runner.assert(scoreResult.score > 0, `Score calculé: ${scoreResult.score} points`);
+
+        // Test 4: Test de nettoyage des lignes
+        runner.section('Test 4: Nettoyage des lignes complètes');
+        const cleanedGrid = clearCompleteLines(gridWithCompleteLine);
+        const isClean = cleanedGrid[0].every(cell => cell === 0);
+        runner.assert(isClean, 'Ligne complète nettoyée avec succès');
+
+        // Test 5: Test des positions valides
+        runner.section('Test 5: Positions valides');
+        const positions = getAllValidPositions(emptyGrid, BLOCK_SHAPES.single);
+        runner.assert(positions.length === 64, `Positions valides pour un point sur grille vide: ${positions.length} (attendu: 64)`);
+
+        const limitedGrid = Array(8).fill(null).map(() => Array(8).fill(1));
+        limitedGrid[0][0] = 0;
+        const limitedPositions = getAllValidPositions(limitedGrid, BLOCK_SHAPES.single);
+        runner.assert(limitedPositions.length === 1, `Positions valides avec 1 case libre: ${limitedPositions.length} (attendu: 1)`);
+
+        // Test 6: Test du solveur avec un scénario simple
+        runner.section('Test 6: Test du solveur - Scénario simple');
+        const testGrid1 = Array(8).fill(null).map(() => Array(8).fill(0));
+        const testBlocks1 = [
+            { id: 'single', name: 'Point', shape: [[1]], color: '#667eea' },
+            { id: 'line2h', name: 'Ligne 2H', shape: [[1, 1]], color: '#667eea' }
+        ];
+
+        const solver1 = new FastSolver(testGrid1, testBlocks1);
+        const solution1 = solver1.solveGreedy();
+
+        runner.assert(solution1.placements.length > 0, `Solution trouvée: ${solution1.placements.length} placements`);
+        runner.assert(solution1.finalScore >= 0, `Score: ${solution1.finalScore}`);
+        runner.assert(!solution1.incomplete, 'Tous les blocs ont été placés');
+
+        // Test 7: Test avec une grille partiellement remplie
+        runner.section('Test 7: Test du solveur - Grille partiellement remplie');
+        const testGrid2 = Array(8).fill(null).map(() => Array(8).fill(0));
+        for (let i = 0; i < 6; i++) {
+            testGrid2[0][i] = 1;
+        }
+
+        const testBlocks2 = [
+            { id: 'line2h', name: 'Ligne 2H', shape: [[1, 1]], color: '#667eea' }
+        ];
+
+        const solver2 = new FastSolver(testGrid2, testBlocks2);
+        const solution2 = solver2.solveGreedy();
+
+        runner.assert(solution2.placements.length === 1, `Solution trouvée: ${solution2.placements.length} placements`);
+        runner.assert(solution2.finalScore >= 10, `Score ${solution2.finalScore} (devrait compléter une ligne)`);
+
+        // Test 8: Test avec plusieurs blocs
+        runner.section('Test 8: Test du solveur - Plusieurs blocs');
+        const testGrid3 = Array(8).fill(null).map(() => Array(8).fill(0));
+        const testBlocks3 = [
+            { id: 'square2x2', name: 'Carré 2x2', shape: [[1,1],[1,1]], color: '#667eea' },
+            { id: 'line3h', name: 'Ligne 3H', shape: [[1,1,1]], color: '#667eea' },
+            { id: 'lSmall1', name: 'L Petit 1', shape: [[1,0],[1,1]], color: '#667eea' }
+        ];
+
+        const solver3 = new FastSolver(testGrid3, testBlocks3);
+        const solution3 = solver3.solveGreedy();
+
+        runner.assert(solution3.placements.length === 3, `Solution trouvée: ${solution3.placements.length} placements`);
+        runner.assert(solution3.finalScore > 0, `Score total: ${solution3.finalScore}`);
+
+        // Test 9: Test de scénario impossible
+        runner.section('Test 9: Test du solveur - Scénario impossible');
+        const fullGrid = Array(8).fill(null).map(() => Array(8).fill(1));
+        const testBlocks4 = [
+            { id: 'single', name: 'Point', shape: [[1]], color: '#667eea' }
+        ];
+
+        const solver4 = new FastSolver(fullGrid, testBlocks4);
+        const solution4 = solver4.solveGreedy();
+
+        runner.assert(solution4.placements.length === 0, 'Aucun placement possible détecté correctement');
+        runner.assert(solution4.incomplete, 'Marqué comme incomplet');
+
+        // Test 10: Test de performance
+        runner.section('Test 10: Test de performance');
+        const perfGrid = Array(8).fill(null).map(() => Array(8).fill(0));
+        const perfBlocks = [
+            { id: 'square3x3', name: 'Carré 3x3', shape: [[1,1,1],[1,1,1],[1,1,1]], color: '#667eea' },
+            { id: 'line5h', name: 'Ligne 5H', shape: [[1,1,1,1,1]], color: '#667eea' },
+            { id: 'plus', name: 'Plus', shape: [[0,1,0],[1,1,1],[0,1,0]], color: '#667eea' }
+        ];
+
+        const startTime = Date.now();
+        const perfSolver = new FastSolver(perfGrid, perfBlocks);
+        const perfSolution = perfSolver.solveGreedy();
+        const endTime = Date.now();
+        const execTime = endTime - startTime;
+
+        runner.assert(execTime < 1000, `Temps d'exécution: ${execTime}ms (< 1000ms)`);
+        runner.assert(perfSolution.placements.length > 0, `Placements trouvés: ${perfSolution.placements.length}`);
+
+        // Test 11: Fonction getSolutionSteps
+        runner.section('Test 11: Fonction getSolutionSteps');
+        const steps = getSolutionSteps(solution3);
+        runner.assert(steps.steps.length === solution3.placements.length, `Steps générés: ${steps.steps.length}`);
+        runner.assert(steps.totalScore === solution3.finalScore, `Score total cohérent: ${steps.totalScore}`);
+        runner.assert(steps.steps.every(s => s.blockName && s.position && s.row !== undefined), 'Structure des steps correcte');
+
+        // Test 12: Test des formes complexes
+        runner.section('Test 12: Test des formes complexes');
+        const complexShapes = ['lBig1', 'tSmall1', 'z1', 'plus'];
+        let complexShapesValid = true;
+
+        for (const shapeId of complexShapes) {
+            const shape = BLOCK_SHAPES[shapeId];
+            if (!shape) {
+                runner.assert(false, `Forme ${shapeId} non trouvée`);
+                complexShapesValid = false;
+                continue;
+            }
+
+            const testGrid = Array(8).fill(null).map(() => Array(8).fill(0));
+            const positions = getAllValidPositions(testGrid, shape);
+
+            if (positions.length === 0) {
+                runner.assert(false, `Forme ${shapeId}: aucune position valide`);
+                complexShapesValid = false;
+            }
+        }
+
+        runner.assert(complexShapesValid, 'Toutes les formes complexes sont valides');
+
+        // Test 13: Test des cas limites
+        runner.section('Test 13: Tests des cas limites');
+
+        const almostFullGrid = Array(8).fill(null).map(() => Array(8).fill(1));
+        almostFullGrid[7][7] = 0;
+
+        const bigBlock = { id: 'square3x3', name: 'Carré 3x3', shape: [[1,1,1],[1,1,1],[1,1,1]], color: '#667eea' };
+        const canPlaceBig = canPlaceBlock(almostFullGrid, bigBlock, 5, 5);
+        runner.assert(!canPlaceBig, 'Bloc trop grand détecté correctement');
+
+        const edgeBlock = { id: 'line2h', name: 'Ligne 2H', shape: [[1, 1]], color: '#667eea' };
+        const canPlaceEdge = canPlaceBlock(emptyGrid, edgeBlock, 0, 7);
+        runner.assert(!canPlaceEdge, 'Dépassement de bordure détecté');
+
+        const canPlaceEdge2 = canPlaceBlock(emptyGrid, edgeBlock, 0, 6);
+        runner.assert(canPlaceEdge2, 'Placement valide près de la bordure');
+
+        // Test 14: Robustesse
+        runner.section('Test 14: Tests de robustesse');
+
+        try {
+            const emptySolver = new FastSolver(emptyGrid, []);
+            const emptySolution = emptySolver.solveGreedy();
+            runner.assert(emptySolution.placements.length === 0, 'Gestion correcte des blocs vides');
+        } catch (e) {
+            runner.assert(false, `Erreur avec tableau vide: ${e.message}`);
+        }
+
+        // Afficher les résultats
+        runner.render();
+
+        console.log(`Tests terminés: ${runner.passedTests}/${runner.passedTests + runner.failedTests} réussis`);
+    </script>
+</body>
+</html>

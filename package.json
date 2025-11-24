@@ -1,0 +1,12 @@
+{
+  "name": "block-blast-solver",
+  "version": "1.0.0",
+  "description": "Un solveur intelligent pour le jeu Block Blast",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx http-server -p 8080 -o"
+  },
+  "keywords": ["block-blast", "puzzle", "solver", "game"],
+  "author": "",
+  "license": "MIT"
+}

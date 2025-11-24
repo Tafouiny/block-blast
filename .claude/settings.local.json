@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node:*)",
+      "Bash(start index.html)",
+      "Bash(start test.html)",
+      "Bash(start demo.html)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
