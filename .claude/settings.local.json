@@ -5,7 +5,9 @@
       "Bash(start index.html)",
       "Bash(start test.html)",
       "Bash(start demo.html)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(start test-duplicates.html)"
     ],
     "deny": [],
     "ask": []

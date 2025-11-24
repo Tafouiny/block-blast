@@ -49,8 +49,10 @@ Puis ouvrez `http://localhost:8080` dans votre navigateur.
 
 ### Étape 2: Sélectionner vos blocs
 - Choisissez jusqu'à 3 blocs parmi la palette (36+ formes disponibles)
-- Cliquez pour sélectionner/désélectionner
+- Cliquez pour sélectionner (vous pouvez choisir le même bloc plusieurs fois)
+- Un badge numéroté indique combien de fois un bloc est sélectionné
 - Les blocs sélectionnés apparaissent dans les slots
+- Utilisez le bouton X pour retirer un bloc
 
 ### Étape 3: Obtenir la solution
 - Cliquez sur "🎯 Trouver la meilleure solution"

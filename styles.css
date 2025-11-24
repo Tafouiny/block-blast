@@ -193,6 +193,28 @@ h3 {
     background: #f0f4ff;
 }
 
+.block-item {
+    position: relative;
+}
+
+.selection-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9em;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+}
+
 .block-name {
     font-size: 0.85em;
     color: #666;

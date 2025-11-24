@@ -108,14 +108,9 @@ class BlockBlastApp {
 
     // Sélectionner un bloc
     selectBlock(id, blockDef) {
-        // Vérifier si déjà sélectionné
-        const existingIndex = this.selectedBlocks.findIndex(b => b.id === id);
-
-        if (existingIndex !== -1) {
-            // Désélectionner
-            this.selectedBlocks.splice(existingIndex, 1);
-        } else if (this.selectedBlocks.length < this.maxBlocks) {
-            // Ajouter
+        // Permettre les duplicatas - on peut avoir le même bloc plusieurs fois
+        if (this.selectedBlocks.length < this.maxBlocks) {
+            // Ajouter le bloc (même si déjà sélectionné)
             this.selectedBlocks.push({
                 id,
                 name: blockDef.name,
@@ -123,7 +118,7 @@ class BlockBlastApp {
                 color: blockDef.color
             });
         } else {
-            alert(`Vous ne pouvez sélectionner que ${this.maxBlocks} blocs maximum`);
+            alert(`Vous avez déjà sélectionné ${this.maxBlocks} blocs. Retirez-en un pour en ajouter un autre.`);
             return;
         }
 
@@ -137,8 +132,26 @@ class BlockBlastApp {
         const allBlockItems = this.blockPaletteElement.querySelectorAll('.block-item');
         allBlockItems.forEach(item => {
             const blockId = item.dataset.blockId;
-            const isSelected = this.selectedBlocks.some(b => b.id === blockId);
-            item.classList.toggle('selected', isSelected);
+
+            // Compter combien de fois ce bloc est sélectionné
+            const count = this.selectedBlocks.filter(b => b.id === blockId).length;
+
+            // Retirer l'ancien badge de comptage s'il existe
+            const oldBadge = item.querySelector('.selection-badge');
+            if (oldBadge) {
+                oldBadge.remove();
+            }
+
+            // Mettre en surbrillance si sélectionné au moins une fois
+            item.classList.toggle('selected', count > 0);
+
+            // Ajouter un badge avec le nombre si sélectionné
+            if (count > 0) {
+                const badge = document.createElement('div');
+                badge.className = 'selection-badge';
+                badge.textContent = count;
+                item.appendChild(badge);
+            }
         });
     }
 

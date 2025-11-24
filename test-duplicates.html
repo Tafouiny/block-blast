@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test des Blocs Dupliqués</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #252526;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        h1 {
+            color: #4ec9b0;
+            text-align: center;
+            border-bottom: 2px solid #4ec9b0;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #1e1e1e;
+            border-left: 4px solid #569cd6;
+            border-radius: 5px;
+        }
+        .success { color: #4ec9b0; }
+        .error { color: #f48771; }
+        .result-line { margin: 5px 0; padding-left: 20px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test des Blocs Dupliqués</h1>
+        <div id="test-results"></div>
+    </div>
+
+    <script src="blockShapes.js"></script>
+    <script src="solver.js"></script>
+    <script>
+        const results = [];
+
+        function log(message, isSuccess = true) {
+            results.push({ message, isSuccess });
+        }
+
+        console.log('=== Test des Blocs Dupliqués ===\n');
+
+        // Test 1: Trois blocs identiques
+        console.log('Test 1: Trois carrés 2x2 identiques');
+        const grid1 = Array(8).fill(null).map(() => Array(8).fill(0));
+        const blocks1 = [
+            { id: 'square2x2', name: 'Carré 2x2', shape: [[1,1],[1,1]], color: '#667eea' },
+            { id: 'square2x2', name: 'Carré 2x2', shape: [[1,1],[1,1]], color: '#667eea' },
+            { id: 'square2x2', name: 'Carré 2x2', shape: [[1,1],[1,1]], color: '#667eea' }
+        ];
+
+        const solver1 = new FastSolver(grid1, blocks1);
+        const solution1 = solver1.solveGreedy();
+
+        const test1Pass = solution1.placements.length === 3;
+        log(`Test 1: ${test1Pass ? '✓' : '✗'} Trois carrés 2x2 - ${solution1.placements.length} placements trouvés (attendu: 3)`, test1Pass);
+        console.log(`  Placements: ${solution1.placements.length}`);
+        console.log(`  Score: ${solution1.finalScore}`);
+
+        // Test 2: Deux blocs identiques + un différent
+        console.log('\nTest 2: Deux lignes 3H + un carré 2x2');
+        const grid2 = Array(8).fill(null).map(() => Array(8).fill(0));
+        const blocks2 = [
+            { id: 'line3h', name: 'Ligne 3H', shape: [[1,1,1]], color: '#667eea' },
+            { id: 'line3h', name: 'Ligne 3H', shape: [[1,1,1]], color: '#667eea' },
+            { id: 'square2x2', name: 'Carré 2x2', shape: [[1,1],[1,1]], color: '#667eea' }
+        ];
+
+        const solver2 = new FastSolver(grid2, blocks2);
+        const solution2 = solver2.solveGreedy();
+
+        const test2Pass = solution2.placements.length === 3;
+        log(`Test 2: ${test2Pass ? '✓' : '✗'} Deux lignes 3H + carré 2x2 - ${solution2.placements.length} placements (attendu: 3)`, test2Pass);
+        console.log(`  Placements: ${solution2.placements.length}`);
+        console.log(`  Score: ${solution2.finalScore}`);
+
+        // Test 3: Scénario réaliste - compléter une ligne avec duplicatas
+        console.log('\nTest 3: Compléter une ligne avec des blocs identiques');
+        const grid3 = Array(8).fill(null).map(() => Array(8).fill(0));
+        // Remplir partiellement la première ligne
+        for (let i = 0; i < 4; i++) {
+            grid3[0][i] = 1;
+        }
+
+        const blocks3 = [
+            { id: 'line2h', name: 'Ligne 2H', shape: [[1,1]], color: '#667eea' },
+            { id: 'line2h', name: 'Ligne 2H', shape: [[1,1]], color: '#667eea' }
+        ];
+
+        const solver3 = new FastSolver(grid3, blocks3);
+        const solution3 = solver3.solveGreedy();
+
+        const test3Pass = solution3.finalScore >= 10; // Devrait compléter la ligne
+        log(`Test 3: ${test3Pass ? '✓' : '✗'} Complétion de ligne - Score: ${solution3.finalScore} (devrait être >= 10)`, test3Pass);
+        console.log(`  Placements: ${solution3.placements.length}`);
+        console.log(`  Score: ${solution3.finalScore}`);
+        console.log(`  Lignes complétées: ${solution3.placements.reduce((sum, p) => sum + (p.clearedLines || 0), 0)}`);
+
+        // Test 4: Performance avec duplicatas
+        console.log('\nTest 4: Performance avec blocs identiques');
+        const grid4 = Array(8).fill(null).map(() => Array(8).fill(0));
+        const blocks4 = [
+            { id: 'square3x3', name: 'Carré 3x3', shape: [[1,1,1],[1,1,1],[1,1,1]], color: '#667eea' },
+            { id: 'square3x3', name: 'Carré 3x3', shape: [[1,1,1],[1,1,1],[1,1,1]], color: '#667eea' },
+            { id: 'square3x3', name: 'Carré 3x3', shape: [[1,1,1],[1,1,1],[1,1,1]], color: '#667eea' }
+        ];
+
+        const start = Date.now();
+        const solver4 = new FastSolver(grid4, blocks4);
+        const solution4 = solver4.solveGreedy();
+        const execTime = Date.now() - start;
+
+        const test4Pass = execTime < 500 && solution4.placements.length > 0;
+        log(`Test 4: ${test4Pass ? '✓' : '✗'} Performance - ${execTime}ms (< 500ms), ${solution4.placements.length} placements`, test4Pass);
+        console.log(`  Temps: ${execTime}ms`);
+        console.log(`  Placements: ${solution4.placements.length}`);
+
+        // Test 5: Trois blocs identiques sur grille partiellement remplie
+        console.log('\nTest 5: Blocs identiques sur grille complexe');
+        const grid5 = Array(8).fill(null).map(() => Array(8).fill(0));
+        // Créer un motif en damier partiel
+        for (let r = 0; r < 4; r++) {
+            for (let c = 0; c < 4; c++) {
+                if ((r + c) % 2 === 0) {
+                    grid5[r][c] = 1;
+                }
+            }
+        }
+
+        const blocks5 = [
+            { id: 'single', name: 'Point', shape: [[1]], color: '#667eea' },
+            { id: 'single', name: 'Point', shape: [[1]], color: '#667eea' },
+            { id: 'single', name: 'Point', shape: [[1]], color: '#667eea' }
+        ];
+
+        const solver5 = new FastSolver(grid5, blocks5);
+        const solution5 = solver5.solveGreedy();
+
+        const test5Pass = solution5.placements.length === 3;
+        log(`Test 5: ${test5Pass ? '✓' : '✗'} Grille complexe - ${solution5.placements.length} placements (attendu: 3)`, test5Pass);
+        console.log(`  Placements: ${solution5.placements.length}`);
+        console.log(`  Score: ${solution5.finalScore}`);
+
+        // Afficher les résultats
+        const resultsDiv = document.getElementById('test-results');
+        let html = '<div class="test-section">';
+
+        results.forEach(result => {
+            html += `<div class="result-line ${result.isSuccess ? 'success' : 'error'}">${result.message}</div>`;
+        });
+
+        html += '</div>';
+
+        const totalTests = results.length;
+        const passedTests = results.filter(r => r.isSuccess).length;
+        const percentage = ((passedTests / totalTests) * 100).toFixed(1);
+
+        html += `
+            <div class="test-section" style="text-align: center; margin-top: 30px; background: #264f78;">
+                <h2 style="color: white;">Résumé</h2>
+                <p style="color: white; font-size: 1.2em;">
+                    ${passedTests} / ${totalTests} tests réussis (${percentage}%)
+                </p>
+                <p style="color: ${passedTests === totalTests ? '#4ec9b0' : '#f48771'}; font-size: 1.5em; font-weight: bold;">
+                    ${passedTests === totalTests ? '✓ Tous les tests passent!' : '✗ Certains tests ont échoué'}
+                </p>
+            </div>
+        `;
+
+        resultsDiv.innerHTML = html;
+
+        console.log(`\n=== Résumé: ${passedTests}/${totalTests} tests réussis (${percentage}%) ===`);
+    </script>
+</body>
+</html>
