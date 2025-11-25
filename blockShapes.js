@@ -68,6 +68,63 @@ const BLOCK_SHAPES = {
         color: '#667eea'
     },
 
+    // Rectangles
+    rect2x3: {
+        name: 'Rectangle 2x3',
+        shape: [
+            [1, 1, 1],
+            [1, 1, 1]
+        ],
+        color: '#667eea'
+    },
+    rect3x2: {
+        name: 'Rectangle 3x2',
+        shape: [
+            [1, 1],
+            [1, 1],
+            [1, 1]
+        ],
+        color: '#667eea'
+    },
+
+    // Diagonales taille 2
+    diag2_1: {
+        name: 'Diagonale 2-1',
+        shape: [
+            [1, 0],
+            [0, 1]
+        ],
+        color: '#667eea'
+    },
+    diag2_2: {
+        name: 'Diagonale 2-2',
+        shape: [
+            [0, 1],
+            [1, 0]
+        ],
+        color: '#667eea'
+    },
+
+    // Diagonales taille 3
+    diag3_1: {
+        name: 'Diagonale 3-1',
+        shape: [
+            [1, 0, 0],
+            [0, 1, 0],
+            [0, 0, 1]
+        ],
+        color: '#667eea'
+    },
+    diag3_2: {
+        name: 'Diagonale 3-2',
+        shape: [
+            [0, 0, 1],
+            [0, 1, 0],
+            [1, 0, 0]
+        ],
+        color: '#667eea'
+    },
+
     // Formes L
     lSmall1: {
         name: 'L Petit 1',

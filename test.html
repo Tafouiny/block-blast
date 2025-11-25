@@ -317,6 +317,45 @@
 
         runner.assert(complexShapesValid, 'Toutes les formes complexes sont valides');
 
+        // Test 12.5: Test des nouveaux blocs (rectangles et diagonales)
+        runner.section('Test 12.5: Test des nouveaux blocs - Rectangles et Diagonales');
+        const newShapes = ['rect2x3', 'rect3x2', 'diag2_1', 'diag2_2', 'diag3_1', 'diag3_2'];
+        let newShapesValid = true;
+
+        for (const shapeId of newShapes) {
+            const shape = BLOCK_SHAPES[shapeId];
+            if (!shape) {
+                runner.assert(false, `Forme ${shapeId} non trouvée`);
+                newShapesValid = false;
+                continue;
+            }
+
+            const testGridNew = Array(8).fill(null).map(() => Array(8).fill(0));
+            const positionsNew = getAllValidPositions(testGridNew, shape);
+
+            if (positionsNew.length === 0) {
+                runner.assert(false, `Forme ${shapeId}: aucune position valide sur grille vide`);
+                newShapesValid = false;
+            } else {
+                runner.assert(true, `Forme ${shapeId}: ${positionsNew.length} positions valides`);
+            }
+        }
+
+        runner.assert(newShapesValid, 'Tous les nouveaux blocs sont valides');
+
+        // Test des dimensions
+        const rect2x3Dims = getShapeDimensions(BLOCK_SHAPES.rect2x3.shape);
+        runner.assert(rect2x3Dims.width === 3 && rect2x3Dims.height === 2, `rect2x3 dimensions: ${rect2x3Dims.width}x${rect2x3Dims.height}`);
+
+        const rect3x2Dims = getShapeDimensions(BLOCK_SHAPES.rect3x2.shape);
+        runner.assert(rect3x2Dims.width === 2 && rect3x2Dims.height === 3, `rect3x2 dimensions: ${rect3x2Dims.width}x${rect3x2Dims.height}`);
+
+        const diag2Dims = getShapeDimensions(BLOCK_SHAPES.diag2_1.shape);
+        runner.assert(diag2Dims.width === 2 && diag2Dims.height === 2, `diag2_1 dimensions: ${diag2Dims.width}x${diag2Dims.height}`);
+
+        const diag3Dims = getShapeDimensions(BLOCK_SHAPES.diag3_1.shape);
+        runner.assert(diag3Dims.width === 3 && diag3Dims.height === 3, `diag3_1 dimensions: ${diag3Dims.width}x${diag3Dims.height}`);
+
         // Test 13: Test des cas limites
         runner.section('Test 13: Tests des cas limites');
 

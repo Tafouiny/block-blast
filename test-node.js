@@ -219,6 +219,49 @@ if (complexShapesValid) {
     console.log(`✓ Toutes les formes complexes testées sont valides\n`);
 }
 
+// Test 12.5: Test des nouveaux blocs (rectangles et diagonales)
+console.log('Test 12.5: Test des nouveaux blocs - Rectangles et Diagonales');
+console.log('-----------------------------------------');
+const newShapes = ['rect2x3', 'rect3x2', 'diag2_1', 'diag2_2', 'diag3_1', 'diag3_2'];
+let newShapesValid = true;
+
+for (const shapeId of newShapes) {
+    const shape = BLOCK_SHAPES[shapeId];
+    if (!shape) {
+        console.log(`✗ Forme ${shapeId} non trouvée`);
+        newShapesValid = false;
+        continue;
+    }
+
+    const testGrid = Array(8).fill(null).map(() => Array(8).fill(0));
+    const positions = getAllValidPositions(testGrid, shape);
+
+    if (positions.length === 0) {
+        console.log(`✗ Forme ${shapeId}: aucune position valide sur grille vide`);
+        newShapesValid = false;
+    } else {
+        console.log(`✓ Forme ${shapeId}: ${positions.length} positions valides`);
+    }
+}
+
+if (newShapesValid) {
+    console.log(`✓ Tous les nouveaux blocs (rectangles et diagonales) sont valides\n`);
+}
+
+// Test des dimensions des nouveaux blocs
+console.log('Test des dimensions des nouveaux blocs:');
+const rect2x3Dims = getShapeDimensions(BLOCK_SHAPES.rect2x3.shape);
+console.log(`✓ rect2x3 dimensions: ${rect2x3Dims.width}x${rect2x3Dims.height} (attendu: 3x2)`);
+
+const rect3x2Dims = getShapeDimensions(BLOCK_SHAPES.rect3x2.shape);
+console.log(`✓ rect3x2 dimensions: ${rect3x2Dims.width}x${rect3x2Dims.height} (attendu: 2x3)`);
+
+const diag2Dims = getShapeDimensions(BLOCK_SHAPES.diag2_1.shape);
+console.log(`✓ diag2_1 dimensions: ${diag2Dims.width}x${diag2Dims.height} (attendu: 2x2)`);
+
+const diag3Dims = getShapeDimensions(BLOCK_SHAPES.diag3_1.shape);
+console.log(`✓ diag3_1 dimensions: ${diag3Dims.width}x${diag3Dims.height} (attendu: 3x3)\n`);
+
 // Test 13: Test des cas limites
 console.log('Test 13: Tests des cas limites');
 console.log('-----------------------------------------');
