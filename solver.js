@@ -221,10 +221,13 @@ function getSolutionSteps(solution) {
 }
 
 // Version optimisée pour grands ensembles de blocs
+// Version optimisée pour grands ensembles de blocs
 class FastSolver {
     constructor(grid, blocks) {
         this.grid = grid;
         this.blocks = blocks;
+        this.bestSolution = null;
+        this.bestScore = -1;
     }
 
     // Utilise une approche greedy pour une solution rapide
@@ -290,13 +293,165 @@ class FastSolver {
             remainingBlocks.splice(bestBlockIndex, 1);
         }
 
-        return {
+        const greedySolution = {
             placements,
             finalScore: totalScore,
             grid: currentGrid,
             incomplete: remainingBlocks.length > 0,
             unblockedBlocks: remainingBlocks.map(b => b.id)
         };
+
+        // Si la solution greedy n'a pas pu placer tous les blocs, essayer le brute force
+        if (greedySolution.incomplete && this.blocks.length <= 3) {
+            console.log('Solution greedy incomplète, lancement du brute force...');
+            const bruteForceSolution = this.solveBruteForce();
+            
+            // Retourner la meilleure solution entre greedy et brute force
+            if (bruteForceSolution && bruteForceSolution.placements.length > greedySolution.placements.length) {
+                console.log('Brute force a trouvé une meilleure solution!');
+                return bruteForceSolution;
+            } else if (bruteForceSolution && !bruteForceSolution.incomplete && greedySolution.incomplete) {
+                console.log('Brute force a trouvé une solution complète!');
+                return bruteForceSolution;
+            }
+        }
+
+        return greedySolution;
+    }
+
+    // Approche brute force exhaustive
+    solveBruteForce() {
+        console.log('Démarrage du brute force...');
+        this.bestSolution = null;
+        this.bestScore = -1;
+
+        // Générer toutes les permutations de l'ordre des blocs
+        const permutations = this.generatePermutations(this.blocks);
+        console.log(`${permutations.length} permutations à tester`);
+
+        let testedCombinations = 0;
+        
+        // Pour chaque permutation
+        for (const permutation of permutations) {
+            this.exploreBruteForce(this.grid, permutation, [], 0);
+            testedCombinations++;
+        }
+
+        console.log(`Brute force terminé: ${testedCombinations} combinaisons testées`);
+
+        if (this.bestSolution) {
+            console.log(`Meilleure solution trouvée: ${this.bestSolution.placements.length} blocs placés, score: ${this.bestSolution.finalScore}`);
+        }
+
+        return this.bestSolution;
+    }
+
+    // Exploration récursive pour le brute force
+    exploreBruteForce(currentGrid, remainingBlocks, placementHistory, currentScore) {
+        // Cas de base: plus de blocs à placer
+        if (remainingBlocks.length === 0) {
+            if (currentScore > this.bestScore || 
+                (currentScore === this.bestScore && this.bestSolution && placementHistory.length > this.bestSolution.placements.length)) {
+                this.bestScore = currentScore;
+                this.bestSolution = {
+                    placements: placementHistory.map(p => ({...p})),
+                    finalScore: currentScore,
+                    grid: currentGrid.map(row => [...row]),
+                    incomplete: false,
+                    unblockedBlocks: []
+                };
+            }
+            return;
+        }
+
+        const currentBlock = remainingBlocks[0];
+        const positions = getAllValidPositions(currentGrid, currentBlock);
+
+        // Si aucune position valide, sauvegarder si c'est mieux que ce qu'on a
+        if (positions.length === 0) {
+            if (placementHistory.length > 0 && 
+                (this.bestSolution === null || 
+                 placementHistory.length > this.bestSolution.placements.length ||
+                 (placementHistory.length === this.bestSolution.placements.length && currentScore > this.bestScore))) {
+                this.bestScore = currentScore;
+                this.bestSolution = {
+                    placements: placementHistory.map(p => ({...p})),
+                    finalScore: currentScore,
+                    grid: currentGrid.map(row => [...row]),
+                    incomplete: true,
+                    unblockedBlocks: remainingBlocks.map(b => b.id)
+                };
+            }
+            return;
+        }
+
+        // Essayer chaque position valide
+        for (const pos of positions) {
+            // Placer le bloc
+            const newGrid = placeBlock(currentGrid, currentBlock, pos.row, pos.col);
+            
+            // Calculer le score
+            const { score: clearScore, clearedLines } = calculateScore(newGrid);
+            
+            // Nettoyer les lignes complètes
+            const cleanedGrid = clearCompleteLines(newGrid);
+            
+            // Score total
+            const blockSize = this.countBlockCells(currentBlock);
+            const placementScore = blockSize + clearScore;
+            const totalScore = currentScore + placementScore;
+
+            // Ajouter ce placement à l'historique
+            const newPlacement = {
+                blockId: currentBlock.id,
+                blockName: currentBlock.name,
+                row: pos.row,
+                col: pos.col,
+                score: placementScore,
+                clearedLines: clearedLines
+            };
+
+            placementHistory.push(newPlacement);
+
+            // Explorer récursivement avec le bloc suivant
+            this.exploreBruteForce(
+                cleanedGrid,
+                remainingBlocks.slice(1),
+                placementHistory,
+                totalScore
+            );
+
+            // Backtrack
+            placementHistory.pop();
+        }
+    }
+
+    // Générer toutes les permutations des blocs
+    generatePermutations(arr) {
+        if (arr.length <= 1) return [arr];
+
+        const permutations = [];
+        for (let i = 0; i < arr.length; i++) {
+            const current = arr[i];
+            const remaining = arr.slice(0, i).concat(arr.slice(i + 1));
+            const remainingPermutations = this.generatePermutations(remaining);
+
+            for (const perm of remainingPermutations) {
+                permutations.push([current].concat(perm));
+            }
+        }
+
+        return permutations;
+    }
+
+    countBlockCells(block) {
+        let count = 0;
+        for (let r = 0; r < block.shape.length; r++) {
+            for (let c = 0; c < block.shape[0].length; c++) {
+                if (block.shape[r][c] === 1) count++;
+            }
+        }
+        return count;
     }
 
     evaluateNearCompletionBonus(grid) {

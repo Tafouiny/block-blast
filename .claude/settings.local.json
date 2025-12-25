@@ -7,7 +7,8 @@
       "Bash(start demo.html)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(start test-duplicates.html)"
+      "Bash(start test-duplicates.html)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

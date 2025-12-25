@@ -227,6 +227,42 @@ const BLOCK_SHAPES = {
         ],
         color: '#667eea'
     },
+    lBig9: {
+        name: 'L Grand 9',
+        shape: [
+            [1, 1],
+            [1, 0],
+            [1, 0]
+        ],
+        color: '#667eea'
+    },
+    lBig10: {
+        name: 'L Grand 10',
+        shape: [
+            [1, 0],
+            [1, 0],
+            [1, 1]
+        ],
+        color: '#667eea'
+    },
+    lBig11: {
+        name: 'L Grand 11',
+        shape: [
+            [1, 1],
+            [0, 1],
+            [0, 1]
+        ],
+        color: '#667eea'
+    },
+    lBig12: {
+        name: 'L Grand 12',
+        shape: [
+            [0, 1],
+            [0, 1],
+            [1, 1]
+        ],
+        color: '#667eea'
+    },
 
     // Formes T
     tSmall1: {
